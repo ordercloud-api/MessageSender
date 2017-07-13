@@ -18,9 +18,5 @@ namespace OrderCloudMessageSender.Models
 		public bool Active { get; set; }
 		public dynamic xp { get; set; }
 		public IReadOnlyList<string> AvailableRoles { get; internal set; }
-		public User()
-		{
-			xp = new ExpandoObject();
-		}
 	}
 }

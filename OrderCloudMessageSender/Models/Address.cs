@@ -21,9 +21,5 @@ namespace OrderCloudMessageSender.Models
 		public string Phone { get; set; }
 		public string AddressName { get; set; }
 		public dynamic xp { get; set; }
-		public Address()
-		{
-			xp = new ExpandoObject();
-		}
 	}
 }
