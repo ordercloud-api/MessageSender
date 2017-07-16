@@ -38,10 +38,15 @@ namespace OrderCloudMessageSender.Controllers
 		{
 			return await SendTwilio($"Thank you, {notification.Recipient.FirstName} {notification.Recipient.LastName}. Your order with {notification.EventBody.Order.LineItemCount} item(s) has been received", notification);
 		}
-		[HttpPost, Route("forgottenpassword")]
-		public async Task<MessageResource> SendForgottenPassword([FromBody] Models.ForgottenPasswordMessage notification)
+		[HttpPost, Route("newuserinvitation")]
+		public async Task<MessageResource> SendNewUserInvitation([FromBody] Models.SetPasswordMessage notification)
 		{
-			return await SendTwilio($"here is your password rest token: {notification.EventBody.PasswordRenewalToken}", notification);
+			return await SendTwilio($"verification code: {notification.EventBody.PasswordRenewalVerificationCode}", notification);
+		}
+		[HttpPost, Route("forgottenpassword")]
+		public async Task<MessageResource> SendForgottenPassword([FromBody] Models.SetPasswordMessage notification)
+		{
+			return await SendTwilio($"password reset code: {notification.EventBody.PasswordRenewalVerificationCode}", notification);
 		}
 		[HttpPost, Route("ordersubmittedforapproval")]
 		public async Task<MessageResource> SendOrderSubmittedForApproval([FromBody] Models.OrderMessage notification)

@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 
 namespace OrderCloudMessageSender.Models
 {
-	public class ForgottenPasswordMessage : MessageNotification
+	public class SetPasswordMessage : MessageNotification
 	{
-		public ForgottenPasswordEventBody EventBody { get; set; }
+		public SetPasswordEventBody EventBody { get; set; }
 	}
 }
