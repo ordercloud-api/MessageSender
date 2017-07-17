@@ -21,6 +21,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="1.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="1.1.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="1.1.1" />
+    <PackageReference Include="Sendgrid" Version="9.5.0" />
     <PackageReference Include="Twilio" Version="5.5.2" />
   </ItemGroup>
   <ItemGroup>
