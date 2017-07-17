@@ -16,7 +16,28 @@ namespace OrderCloudMessageSender.Controllers
     [Route("mandrill")]
     public class MadrillController : Controller
     {
-	    [HttpPost, Route("ordersubmitted")]
+	    [HttpPost, Route("shipmentcreated")]
+	    public async Task<string> SendShipmentCreatedMessage([FromBody] Models.ShipmentMessage notification)
+	    {
+		    try
+		    {
+			    var mergeVars = BuildShipmentVars(notification);
+			    return await SendMandrill(notification, mergeVars);
+		    }
+		    catch (Exception e)
+		    {
+			    return e.ToString();
+			    throw;
+		    }
+	    }
+
+		[HttpPost, 
+			Route("ordersubmitted"),
+			Route("ordersubmittedforyourapproval"),
+			Route("orderdeclined"),
+			Route("ordersubmittedforapproval"),
+			Route("OrderApproved"),
+			Route("ordersubmittedforyourapprovalhasbeendeclined")]
 	    public async Task<string> SendOrderSubmittedMessage([FromBody] Models.OrderMessage notification)
 	    {
 		    try
