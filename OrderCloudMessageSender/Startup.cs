@@ -38,7 +38,7 @@ namespace OrderCloudMessageSender
         {
 			app.Use(async (context, next) =>
 			{
-				var messageConfigReader = _provider.GetService<IConfigReader>();
+				var messageConfigReader = _provider.GetService<IConfigService>();
 				var configid = context.Request.Query["configid"];
 				var config = await messageConfigReader.GetMessageConfigAsync(configid);
 

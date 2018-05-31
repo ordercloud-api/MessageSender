@@ -9,15 +9,18 @@ using OrderCloud.AzureStorage;
 
 namespace OrderCloudMessageSender.Common
 {
-	public interface IConfigReader
+	public interface IConfigService
 	{
 		Task<MessageSenderConfig> GetMessageConfigAsync(string configid);
+		Task<MessageSenderConfig> SaveMessageConfigAsync(MessageSenderConfig config);
+		Task<MessageSenderConfig> DeleteMessageConfigAsync(string configid);
+
 	}
-	public class AzureTableConfigReaderService : IConfigReader
+	public class AzureTableConfigService : IConfigService
 	{
 		private readonly TableService _table;
 
-		public AzureTableConfigReaderService(TableService table)
+		public AzureTableConfigService(TableService table)
 		{
 			_table = table;
 		}
@@ -45,6 +48,16 @@ namespace OrderCloudMessageSender.Common
 			{
 				throw e;
 			}
+		}
+
+		public Task<MessageSenderConfig> SaveMessageConfigAsync(MessageSenderConfig config)
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<MessageSenderConfig> DeleteMessageConfigAsync(string configid)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

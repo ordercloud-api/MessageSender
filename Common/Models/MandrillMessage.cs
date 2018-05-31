@@ -75,6 +75,7 @@ namespace OrderCloudMessageSender.Common
 		public string inline_css { get; set; }
 		public string subaccount { get; set; }
 		public List<GlobalMergeVar> global_merge_vars { get; set; }
+		public string merge_language => "handlebars";
 	}
 
 	public class MandrillMessage

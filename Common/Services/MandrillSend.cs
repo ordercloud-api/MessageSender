@@ -18,10 +18,10 @@ namespace OrderCloudMessageSender.Common
 	public class MandrillSend : IMandrillSend
 	{
 		private readonly IMessageLog _log;
-		private readonly IConfigReader _configReader;
+		private readonly IConfigService _configReader;
 		private readonly BlobService _blob;
 
-		public MandrillSend(IMessageLog log, IConfigReader configReader, BlobService blob )
+		public MandrillSend(IMessageLog log, IConfigService configReader, BlobService blob )
 		{
 			_log = log;
 			_configReader = configReader;

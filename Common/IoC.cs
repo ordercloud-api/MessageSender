@@ -19,7 +19,7 @@ namespace OrderCloudMessageSender.Common
 			services.AddSingleton(new OrderCloud.AzureStorage.TableService(settings.StorageConnection));
 			services.AddSingleton<IAppSettings>(settings);
 			services.AddTransient<IMessageLog, AzureTableLogService>();
-			services.AddTransient<IConfigReader, AzureTableConfigReaderService>();
+			services.AddTransient<IConfigService, AzureTableConfigService>();
 			services.AddTransient<IMandrillSend, MandrillSend>();
 			services.AddSingleton<BlobService>(new BlobService(settings.StorageConnection));
 			var provider = services.BuildServiceProvider();
