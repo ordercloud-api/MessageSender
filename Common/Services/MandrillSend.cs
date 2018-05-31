@@ -19,11 +19,13 @@ namespace OrderCloudMessageSender.Common
 	{
 		private readonly IMessageLog _log;
 		private readonly IConfigReader _configReader;
+		private readonly BlobService _blob;
 
-		public MandrillSend(IMessageLog log, IConfigReader configReader )
+		public MandrillSend(IMessageLog log, IConfigReader configReader, BlobService blob )
 		{
 			_log = log;
 			_configReader = configReader;
+			_blob = blob;
 		}
 
 		public async Task<string> SendAsync(string configid, MessageNotification notification, List<GlobalMergeVar> mergeVars)
@@ -50,11 +52,10 @@ namespace OrderCloudMessageSender.Common
 			};
 			var response = await "https://mandrillapp.com/api/1.0/messages/send-template.json".AllowAnyHttpStatus().PostJsonAsync(mandrill);
 			var body = await response.Content.ReadAsStringAsync();
-			if (response.IsSuccessStatusCode)
-				await _log.LogAsync(configid, "mandrill", "Success", body);
-			else
-				await _log.LogAsync(configid, "mandrill", "Fail", body);
 
+			var fileName = Guid.NewGuid().ToString() + ".json";
+			await _blob.WriteBlockBlobFromStringBodyAsync("mandrillbody", fileName, JsonConvert.SerializeObject(mandrill, Formatting.Indented));
+			await _log.LogAsync(configid, "mandrill", body, fileName);
 			return body;
 		}
 	}

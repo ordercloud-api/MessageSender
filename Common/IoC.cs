@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrderCloud.AzureStorage;
 
 namespace OrderCloudMessageSender.Common
 {
@@ -20,6 +21,7 @@ namespace OrderCloudMessageSender.Common
 			services.AddTransient<IMessageLog, AzureTableLogService>();
 			services.AddTransient<IConfigReader, AzureTableConfigReaderService>();
 			services.AddTransient<IMandrillSend, MandrillSend>();
+			services.AddSingleton<BlobService>(new BlobService(settings.StorageConnection));
 			var provider = services.BuildServiceProvider();
 			return provider;
 		}

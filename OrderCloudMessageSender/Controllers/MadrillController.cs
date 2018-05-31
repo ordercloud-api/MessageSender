@@ -60,21 +60,15 @@ namespace OrderCloudMessageSender.Controllers
 		[HttpPost, Route("forgottenpassword"), Route("newuserinvitation")]
 	    public async Task<string> SendSetPassword([FromBody] SetPasswordMessage notification, [FromQuery] string configid)
 	    {
-			try
-			{
-				var mergeVars = new List<GlobalMergeVar>() {
+
+		    var mergeVars = new List<GlobalMergeVar>() {
 					new GlobalMergeVar {name = "username", content = notification.EventBody.Username},
 					new GlobalMergeVar {name = "passwordtoken", content = notification.EventBody.PasswordRenewalAccessToken},
 					new GlobalMergeVar {name = "passwordverificationcode", content = notification.EventBody.PasswordRenewalVerificationCode},
 					new GlobalMergeVar {name = "passwordrenewalurl", content = notification.EventBody.PasswordRenewalUrl}
 				};
 				return await _mandrillSend.SendAsync(configid, notification, mergeVars);
-			}
-			catch (Exception e)
-			{
-				return e.ToString();
-				throw;
-			}
+			
 		}
 		private List<GlobalMergeVar> BuildShipmentVars(ShipmentMessage notification)
 	    {

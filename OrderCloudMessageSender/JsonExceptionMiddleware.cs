@@ -22,7 +22,7 @@ namespace OrderCloudMessageSender
 		public async Task Invoke(HttpContext context)
 		{
 			context.Response.ContentType = "application/json";
-			await _log.LogAsync("", "unhandled", "exception", context.Features.Get<IExceptionHandlerFeature>()?.Error.Message);
+			await _log.LogAsync("", "unhandled", context.Features.Get<IExceptionHandlerFeature>()?.Error.InnerException.ToString(), null);
 
 			object getError(Exception ex)
 			{

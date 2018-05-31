@@ -39,7 +39,8 @@ namespace OrderCloudMessageSender
 			app.Use(async (context, next) =>
 			{
 				var messageConfigReader = _provider.GetService<IConfigReader>();
-				var config = await messageConfigReader.GetMessageConfigAsync(context.Request.Query["configid"]);
+				var configid = context.Request.Query["configid"];
+				var config = await messageConfigReader.GetMessageConfigAsync(configid);
 
 				string body = await new StreamReader(context.Request.Body).ReadToEndAsync();
 				var keyBytes = Encoding.UTF8.GetBytes(config.OcHashKey);
@@ -47,17 +48,20 @@ namespace OrderCloudMessageSender
 				var hmac = new HMACSHA256(keyBytes);
 				var hmacBytes = hmac.ComputeHash(dataBytes);
 				var hash = Convert.ToBase64String(hmacBytes);
-					  //there is an ordercloud platform bug that the hash is not calcualted correctly
-					  //if (context.Request.Headers["X-oc-hash"] != hash)
-					  //{
-					  //	context.Response.StatusCode = 401;
-					  //	await context.Response.WriteAsync("the sender is not validated. OCHashKey in appsettings.json must match the shared key in the OrderCloud Message sender config.");
-					  //}
-					  //else
-					  //{
-					  context.Request.Body = new MemoryStream(dataBytes);
-				await next();
-					  //}
+				
+				if (context.Request.Headers["X-oc-hash"] != hash)
+				{
+					var error = "the sender is not validated. OCHashKey must match the shared key in the OrderCloud Message sender config.";
+					var log = _provider.GetService<IMessageLog>();
+					await log.LogAsync(configid, "mandrill", error, null);
+					context.Response.StatusCode = 401;
+					await context.Response.WriteAsync(error);
+				}
+				else
+				{
+					context.Request.Body = new MemoryStream(dataBytes);
+					await next();
+				}
 			});
 
 			app.UseExceptionHandler(new ExceptionHandlerOptions
