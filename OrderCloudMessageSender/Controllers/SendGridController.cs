@@ -4,7 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OrderCloudMessageSender.Models;
+using OrderCloudMessageSender;
+using OrderCloudMessageSender.Common;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 
@@ -32,7 +33,7 @@ namespace OrderCloudMessageSender.Controllers
 	    }
 
 	    [HttpPost, Route("ordersubmitted")]
-	    public async Task<string> SendOrderSubmittedMessage([FromBody] Models.OrderMessage notification)
+	    public async Task<string> SendOrderSubmittedMessage([FromBody] OrderMessage notification)
 	    {
 		    var msg = BuildOrderMessage(notification.EventBody);
 			return await SendSendGrid(notification, msg);
@@ -53,7 +54,7 @@ namespace OrderCloudMessageSender.Controllers
 		}
 		
 		[HttpPost, Route("newuserinvitation")]
-	    public async Task<string> SendNewUserInvitation([FromBody] Models.SetPasswordMessage notification)
+	    public async Task<string> SendNewUserInvitation([FromBody] SetPasswordMessage notification)
 	    {
 		    var msg = new SendGridMessage();
 		    msg.AddSubstitution("-username-", notification.EventBody.Username);

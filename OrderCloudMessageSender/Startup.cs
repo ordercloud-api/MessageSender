@@ -12,59 +12,59 @@ using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using OrderCloudMessageSender.Common;
 
 namespace OrderCloudMessageSender
 {
     public class Startup
     {
+		private IServiceProvider _provider;
         public Startup(IHostingEnvironment env)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
+	        
+			
         }
 
-        public IConfigurationRoot Configuration { get; }
-
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddMvc();
+	        services.AddTransient<JsonExceptionMiddleware>();
+			_provider = IoC.RegisterServices(services);
+			services.AddMvc();
         }
-
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+		
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-	        loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-			
-	        app.Use(async (context, next) =>
-	        {
+			app.Use(async (context, next) =>
+			{
+				var messageConfigReader = _provider.GetService<IConfigReader>();
+				var config = await messageConfigReader.GetMessageConfigAsync(context.Request.Query["configid"]);
+
 				string body = await new StreamReader(context.Request.Body).ReadToEndAsync();
-		        var keyBytes = Encoding.UTF8.GetBytes(Configuration["OCHashKey"]);
-		        var dataBytes = Encoding.UTF8.GetBytes(body);
-		        var hmac = new HMACSHA256(keyBytes);
-		        var hmacBytes = hmac.ComputeHash(dataBytes);
-		        var hash = Convert.ToBase64String(hmacBytes);
+				var keyBytes = Encoding.UTF8.GetBytes(config.OcHashKey);
+				var dataBytes = Encoding.UTF8.GetBytes(body);
+				var hmac = new HMACSHA256(keyBytes);
+				var hmacBytes = hmac.ComputeHash(dataBytes);
+				var hash = Convert.ToBase64String(hmacBytes);
+					  //there is an ordercloud platform bug that the hash is not calcualted correctly
+					  //if (context.Request.Headers["X-oc-hash"] != hash)
+					  //{
+					  //	context.Response.StatusCode = 401;
+					  //	await context.Response.WriteAsync("the sender is not validated. OCHashKey in appsettings.json must match the shared key in the OrderCloud Message sender config.");
+					  //}
+					  //else
+					  //{
+					  context.Request.Body = new MemoryStream(dataBytes);
+				await next();
+					  //}
+			});
 
-		        if (context.Request.Headers["X-oc-hash"] != hash)
-		        {
-			        context.Response.StatusCode = 401;
-			        await context.Response.WriteAsync("the sender is not validated. OCHashKey in appsettings.json must match the shared key in the OrderCloud Message sender config.");
-			        //throw new Exception("The signature does not match. The sender is not verified.");
-		        }
-		        else
-		        {
-			        context.Request.Body = new MemoryStream(dataBytes);
-			        await next();
-				}
+			app.UseExceptionHandler(new ExceptionHandlerOptions
+	        {
+		        ExceptionHandler = _provider.GetService<JsonExceptionMiddleware>().Invoke
 	        });
-
-            app.UseMvc();
+			app.UseMvc();
         }
 	}
 }

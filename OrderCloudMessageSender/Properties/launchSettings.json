@@ -8,21 +8,14 @@
     }
   },
   "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchUrl": "api/values",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "OrderCloudMessageSender": {
+    "OrderCloudMessageSender LOCAL STORAGE": {
       "commandName": "Project",
-      "launchBrowser": true,
       "launchUrl": "api/values",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "StorageConnection": "UseDevelopmentStorage=true"
       },
-      "applicationUrl": "http://localhost:49955"
+      "applicationUrl": "http://localhost:54756"
     }
   }
 }

@@ -5,7 +5,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace OrderCloudMessageSender
+namespace OrderCloudMessageSender.Common
 {
 	// the only types we need to care about
 	// https://en.wikipedia.org/wiki/JSON#Data_types.2C_syntax_and_example

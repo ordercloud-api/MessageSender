@@ -6,9 +6,8 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using OrderCloudMessageSender.Models;
+using OrderCloudMessageSender.Common;
 using Flurl.Http;
-
 
 namespace OrderCloudMessageSender.Controllers
 {
@@ -16,13 +15,19 @@ namespace OrderCloudMessageSender.Controllers
     [Route("mandrill")]
     public class MadrillController : Controller
     {
-	    [HttpPost, Route("shipmentcreated")]
-	    public async Task<string> SendShipmentCreatedMessage([FromBody] Models.ShipmentMessage notification)
+	    private readonly IMandrillSend _mandrillSend;
+
+	    public MadrillController(IMandrillSend mandrillSend)
+	    {
+		    _mandrillSend = mandrillSend;
+	    }
+		[HttpPost, Route("shipmentcreated")]
+	    public async Task<string> SendShipmentCreatedMessage([FromBody] ShipmentMessage notification, [FromQuery] string configid)
 	    {
 		    try
 		    {
 			    var mergeVars = BuildShipmentVars(notification);
-			    return await SendMandrill(notification, mergeVars);
+			    return await _mandrillSend.SendAsync(configid, notification, mergeVars);
 		    }
 		    catch (Exception e)
 		    {
@@ -38,12 +43,12 @@ namespace OrderCloudMessageSender.Controllers
 			Route("ordersubmittedforapproval"),
 			Route("OrderApproved"),
 			Route("ordersubmittedforyourapprovalhasbeendeclined")]
-	    public async Task<string> SendOrderSubmittedMessage([FromBody] Models.OrderMessage notification)
+	    public async Task<string> SendOrderSubmittedMessage([FromBody] OrderMessage notification, [FromQuery] string configid)
 	    {
 		    try
 		    {
 			    var mergeVars = BuildOrderMergeVars(notification.EventBody);
-				return await SendMandrill(notification, mergeVars);
+				return await _mandrillSend.SendAsync(configid, notification, mergeVars);
 			}
 		    catch (Exception e)
 		    {
@@ -53,7 +58,7 @@ namespace OrderCloudMessageSender.Controllers
 	    }
 
 		[HttpPost, Route("forgottenpassword"), Route("newuserinvitation")]
-	    public async Task<string> SendSetPassword([FromBody] Models.SetPasswordMessage notification)
+	    public async Task<string> SendSetPassword([FromBody] SetPasswordMessage notification, [FromQuery] string configid)
 	    {
 			try
 			{
@@ -63,7 +68,7 @@ namespace OrderCloudMessageSender.Controllers
 					new GlobalMergeVar {name = "passwordverificationcode", content = notification.EventBody.PasswordRenewalVerificationCode},
 					new GlobalMergeVar {name = "passwordrenewalurl", content = notification.EventBody.PasswordRenewalUrl}
 				};
-				return await SendMandrill(notification, mergeVars);
+				return await _mandrillSend.SendAsync(configid, notification, mergeVars);
 			}
 			catch (Exception e)
 			{
@@ -71,30 +76,6 @@ namespace OrderCloudMessageSender.Controllers
 				throw;
 			}
 		}
-
-	    private async Task<string> SendMandrill(MessageNotification notification, List<GlobalMergeVar> mergeVars)
-	    {
-			var mandrill = new MandrillMessage
-			{
-				key = notification.ConfigData.MandrillKey,
-				template_name = notification.MessageType.ToString(),
-				template_content = new List<TemplateContent>() { new TemplateContent { name = "main", content = "messageConfig.MainContent" } },
-
-				message = new Message
-				{
-					from_email = notification.ConfigData.FromEmail,
-					to = new List<To>() {
-						new To(){ email = notification.Recipient.Email, sendtype = "to"}
-					},
-					auto_html = "true",
-					inline_css = "true",
-					subaccount = notification.ConfigData.SubAccount,
-					global_merge_vars = mergeVars
-				}
-			};
-		    return await "https://mandrillapp.com/api/1.0/messages/send-template.json".AllowAnyHttpStatus()
-			    .PostJsonAsync(mandrill).ReceiveString();
-	    }
 		private List<GlobalMergeVar> BuildShipmentVars(ShipmentMessage notification)
 	    {
 		    var mergeVars = BuildOrderMergeVars(notification.EventBody);
@@ -197,10 +178,7 @@ namespace OrderCloudMessageSender.Controllers
 				  new GlobalMergeVar { name = "orderxp_" + xpRow.Key.Replace(".", "_"), content = xpRow.Value } :
 				  new GlobalMergeVar { name = $"orderxp_{xpRow.Key.Replace(".", "_")}_{xpRow.Index}", content = xpRow.Value }));
 			}
-
 			return mergeVars;
 	    }
-
-		
 	}
 }
