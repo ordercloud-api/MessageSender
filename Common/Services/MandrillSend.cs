@@ -30,23 +30,25 @@ namespace OrderCloudMessageSender.Common
 
 		public async Task<string> SendAsync(string configid, MessageNotification notification, List<GlobalMergeVar> mergeVars)
 		{
+			dynamic messageConfig = (notification.ConfigData.MessageTypeConfig as IEnumerable<dynamic>).First(d => d.MessageType == notification.MessageType);
+		
 			var config = await _configReader.GetMessageConfigAsync(configid);
 
 			var mandrill = new MandrillMessage
 			{
 				key = config.MandrillKey,
-				template_name = notification.MessageType.ToString(),
+				template_name = messageConfig.TemplateName.ToString(),
 				template_content = new List<TemplateContent>() { new TemplateContent { name = "main", content = "messageConfig.MainContent" } },
 
 				message = new Message
 				{
-					from_email = notification.ConfigData.FromEmail,
+					from_email = messageConfig.FromEmail,
+					subject = messageConfig.Subject,
 					to = new List<To>() {
 						new To(){ email = notification.Recipient.Email, sendtype = "to"}
 					},
 					auto_html = "true",
 					inline_css = "true",
-					subaccount = config.MandrillSubaccount,
 					global_merge_vars = mergeVars
 				}
 			};
