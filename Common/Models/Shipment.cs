@@ -12,5 +12,6 @@ namespace OrderCloudMessageSender.Common
 		public string Shipper { get; set; }
 		public DateTimeOffset DateShipped { get; set; }
 		public Address ToAddress { get; set; }
+		public dynamic xp { get; set; }
 	}
 }

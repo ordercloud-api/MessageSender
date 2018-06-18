@@ -106,16 +106,16 @@ namespace OrderCloudMessageSender.Controllers
 						return msi;
 					}).ToArray()
 			});
-		    return mergeVars;
-            if (eventBody.Shipment.xp != null)
+		    if (notification.EventBody.Shipment.xp != null)
             {
-                IList<XpRow> xpRows = XpParser.ToRows(eventBody.Shipment.xp.ToString());
+                IList<XpRow> xpRows = XpParser.ToRows(notification.EventBody.Shipment.xp.ToString());
                 mergeVars.AddRange(xpRows.Select(
-                 xpRow => xpRow.Index == null ?
+                xpRow => xpRow.Index == null ?
                   new GlobalMergeVar { name = "shipmentxp_" + xpRow.Key.Replace(".", "_"), content = xpRow.Value } :
                   new GlobalMergeVar { name = $"shipmentxp_{xpRow.Key.Replace(".", "_")}_{xpRow.Index}", content = xpRow.Value }));
             }
-        }
+		    return mergeVars;
+		}
 	    private List<GlobalMergeVar> BuildOrderMergeVars(OrderEventBody eventBody)
 	    {
 		    var mergeVars = new List<GlobalMergeVar>() {
