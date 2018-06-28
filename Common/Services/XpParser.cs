@@ -50,7 +50,7 @@ namespace OrderCloudMessageSender.Common
 					{
 						Key = key,
 						Index = index,
-						Value = token.Value<Array>()
+						Value = token.Value<object>()
 					};
 					//for (var i = 0; i < arr.Count; i++)
 					//{
