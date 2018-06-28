@@ -15,8 +15,7 @@ namespace OrderCloudMessageSender.Common
 	{
 		public string Key { get; set; }
 		public int? Index { get; set; }
-		public JsonType JsonType { get; set; }
-		public string Value { get; set; }
+		public object Value { get; set; }
 	}
 
 	public class XpParser
@@ -33,47 +32,6 @@ namespace OrderCloudMessageSender.Common
 			return InnerToRows(null, null, JToken.Parse(json)).ToList();
 		}
 
-		/// <summary>
-		/// build an xp object from representation stored in db
-		/// </summary>
-		public static object FromRows(IEnumerable<XpRow> rows)
-		{
-			if (rows == null || !rows.Any())
-				return null;
-
-			var obj = new Dictionary<string, object>();
-
-			foreach (var row in rows.OrderBy(r => r.Key).ThenBy(r => r.Index ?? 0))
-			{
-				var keyParts = new Queue<string>(row.Key.Split('.'));
-				var key = keyParts.Dequeue();
-				var parent = obj;
-				while (keyParts.Any())
-				{
-					// traverse .'s and build deep objects
-					if (!parent.ContainsKey(key))
-						parent.Add(key, new Dictionary<string, object>());
-					parent = (Dictionary<string, object>)parent[key];
-					key = keyParts.Dequeue();
-				}
-
-				var val = GetObjectValue(row);
-				if (row.Index.HasValue)
-				{
-					// array
-					if (!parent.ContainsKey(key))
-						parent[key] = new List<object>();
-					((IList<object>)parent[key]).Add(val);
-				}
-				else
-				{
-					// primitive val
-					parent.Add(key, val);
-				}
-			}
-			return obj;
-		}
-
 		private static IEnumerable<XpRow> InnerToRows(string key, int? index, JToken token)
 		{
 			switch (token.Type)
@@ -88,14 +46,20 @@ namespace OrderCloudMessageSender.Common
 					break;
 				case JTokenType.Array:
 					var arr = (JArray)token;
-					for (var i = 0; i < arr.Count; i++)
+					yield return new XpRow
 					{
-						foreach (var row in InnerToRows(key, i, arr[i]))
-							yield return row;
-					}
+						Key = key,
+						Index = index,
+						Value = token.Value<Array>()
+					};
+					//for (var i = 0; i < arr.Count; i++)
+					//{
+					//	foreach (var row in InnerToRows(key, i, arr[i]))
+					//		yield return row;
+					//}
 					break;
 				default:
-					yield return new XpRow { Key = key, Index = index, JsonType = GetJsonType(token.Type), Value = token.Value<string>() };
+					yield return new XpRow { Key = key, Index = index, Value = token.Value<string>() };
 					break;
 			}
 		}
@@ -114,19 +78,5 @@ namespace OrderCloudMessageSender.Common
 			}
 		}
 
-		private static object GetObjectValue(XpRow row)
-		{
-			if (row.Value == null)
-				return null;
-
-			switch (row.JsonType)
-			{
-				case JsonType.Number:
-					return decimal.Parse(row.Value);
-				case JsonType.Boolean:
-					return bool.Parse(row.Value);
-				default: return row.Value;
-			}
-		}
 	}
 }
