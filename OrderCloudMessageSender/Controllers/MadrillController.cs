@@ -27,7 +27,8 @@ namespace OrderCloudMessageSender.Controllers
 		    try
 		    {
 			    var mergeVars = BuildShipmentVars(notification);
-			    return await _mandrillSend.SendAsync(configid, notification, mergeVars);
+				mergeVars.Add(new GlobalMergeVar { name = "environment", content = notification.Environment });
+				return await _mandrillSend.SendAsync(configid, notification, mergeVars);
 		    }
 		    catch (Exception e)
 		    {
@@ -48,6 +49,7 @@ namespace OrderCloudMessageSender.Controllers
 		    try
 		    {
 			    var mergeVars = BuildOrderMergeVars(notification.EventBody);
+				mergeVars.Add(new GlobalMergeVar { name = "environment", content = notification.Environment });
 				return await _mandrillSend.SendAsync(configid, notification, mergeVars);
 			}
 		    catch (Exception e)
@@ -62,6 +64,7 @@ namespace OrderCloudMessageSender.Controllers
 	    {
 
 		    var mergeVars = new List<GlobalMergeVar>() {
+					new GlobalMergeVar { name = "environment", content = notification.Environment },
 					new GlobalMergeVar {name = "username", content = notification.EventBody.Username},
 					new GlobalMergeVar {name = "passwordtoken", content = notification.EventBody.PasswordRenewalAccessToken},
 					new GlobalMergeVar {name = "passwordverificationcode", content = notification.EventBody.PasswordRenewalVerificationCode},

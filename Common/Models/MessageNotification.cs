@@ -9,6 +9,7 @@ namespace OrderCloudMessageSender.Common
 
 	public class MessageNotification
 	{
+		public string Environment {get;set;}
 		public string BuyerID { get; set; }
 		public string UserToken { get; set; }
 		public User Recipient { get; set; }
